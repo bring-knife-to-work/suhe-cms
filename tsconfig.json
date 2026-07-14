@@ -1,0 +1,39 @@
+﻿{
+    "include":  [
+                    "src/**/*.ts",
+                    "src/**/*.tsx",
+                    "src/**/*.vue"
+                ],
+    "references":  [
+                       {
+                           "path":  "./tsconfig.node.json"
+                       }
+                   ],
+    "compilerOptions":  {
+                            "strict":  true,
+                            "lib":  [
+                                        "ES2020",
+                                        "DOM",
+                                        "DOM.Iterable"
+                                    ],
+                            "moduleResolution":  "bundler",
+                            "target":  "ES2020",
+                            "allowImportingTsExtensions":  true,
+                            "paths":  {
+                                          "@":  [
+                                                    "src/*"
+                                                ]
+                                      },
+                            "isolatedModules":  true,
+                            "noEmit":  true,
+                            "jsx":  "preserve",
+                            "noUnusedLocals":  true,
+                            "baseUrl":  ".",
+                            "noFallthroughCasesInSwitch":  true,
+                            "skipLibCheck":  true,
+                            "useDefineForClassFields":  true,
+                            "noUnusedParameters":  true,
+                            "moduleDetection":  "force",
+                            "module":  "ESNext"
+                        }
+}

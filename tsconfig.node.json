@@ -1,0 +1,22 @@
+{
+    "include":  [
+                    "vite.config.ts"
+                ],
+    "compilerOptions":  {
+                            "noEmit":  true,
+                            "noFallthroughCasesInSwitch":  true,
+                            "module":  "ESNext",
+                            "noUnusedLocals":  true,
+                            "moduleResolution":  "bundler",
+                            "isolatedModules":  true,
+                            "skipLibCheck":  true,
+                            "strict":  true,
+                            "target":  "ES2022",
+                            "moduleDetection":  "force",
+                            "allowImportingTsExtensions":  true,
+                            "lib":  [
+                                        "ES2023"
+                                    ],
+                            "noUnusedParameters":  true
+                        }
+}
