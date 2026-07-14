@@ -1,5 +1,5 @@
 <template>
-  <div class="login-page" :class="{ dark: appStore.darkMode }">
+  <div class="login-page" :class="{ dark: appStore.darkMode }" :style="{ '--login-bg-image': `url(${loginBg})` }">
     <button class="theme-fab" type="button" @click="appStore.toggleTheme()">
       <el-icon><Sunny v-if="appStore.darkMode" /><Moon v-else /></el-icon>
       {{ appStore.darkMode ? '白天模式' : '黑夜模式' }}
@@ -53,6 +53,7 @@ import { ElMessage } from 'element-plus'
 import { User, Lock, Moon, Sunny } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { useAppStore } from '@/stores/app'
+import loginBg from '@/assets/login-bg.jpg'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -94,17 +95,24 @@ async function handleLogin() {
   place-items: center;
   padding: 24px;
   position: relative;
-  background:
-    radial-gradient(900px 420px at 12% 18%, rgba(20, 184, 166, 0.28), transparent 55%),
-    radial-gradient(700px 360px at 88% 82%, rgba(15, 118, 110, 0.22), transparent 50%),
-    linear-gradient(145deg, #e8f2f1 0%, #d7e6ec 45%, #edf1f5 100%);
+  background-color: #d7e6ec;
+  background-image:
+    radial-gradient(900px 420px at 12% 18%, rgba(20, 184, 166, 0.22), transparent 55%),
+    radial-gradient(700px 360px at 88% 82%, rgba(15, 118, 110, 0.16), transparent 50%),
+    linear-gradient(145deg, rgba(232, 242, 241, 0.88) 0%, rgba(215, 230, 236, 0.82) 45%, rgba(237, 241, 245, 0.9) 100%),
+    var(--login-bg-image);
+  background-size: cover, cover, cover, cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .login-page.dark {
-  background:
-    radial-gradient(900px 420px at 12% 18%, rgba(45, 212, 191, 0.16), transparent 55%),
-    radial-gradient(700px 360px at 88% 82%, rgba(15, 118, 110, 0.2), transparent 50%),
-    linear-gradient(145deg, #071018 0%, #0b1724 50%, #101a28 100%);
+  background-color: #071018;
+  background-image:
+    radial-gradient(900px 420px at 12% 18%, rgba(45, 212, 191, 0.12), transparent 55%),
+    radial-gradient(700px 360px at 88% 82%, rgba(15, 118, 110, 0.18), transparent 50%),
+    linear-gradient(145deg, rgba(7, 16, 24, 0.92) 0%, rgba(11, 23, 36, 0.88) 50%, rgba(16, 26, 40, 0.9) 100%),
+    var(--login-bg-image);
 }
 
 .theme-fab {
