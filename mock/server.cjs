@@ -43,6 +43,14 @@ const mockPrograms = Array.from({ length: 30 }, (_, i) => ({
   creators: ['导演A', '编剧B'], copyright: 'copyright',
   status: ['draft', 'pending', 'published', 'archived'][i % 4],
   publishTime: i % 2 === 0 ? '2024-07-01' : null,
+  resolution: ['1920x1080', '1280x720', '1080x1920', '3840x2160'][i % 4],
+  canvas: {
+    width: [1920, 1280, 1080, 3840][i % 4],
+    height: [1080, 720, 1920, 2160][i % 4],
+    resolution: ['1920x1080', '1280x720', '1080x1920', '3840x2160'][i % 4],
+    background: '#0b1220',
+    shapes: [],
+  },
   chapters: [{ id: i * 100 + 1, title: '第1集', sortOrder: 0, duration: 1800 }],
   assets: [{ id: i * 10 + 1, mediaId: i + 1, type: 'cover', isCover: true }],
   version: 1, history: [{ id: 1, version: 1, title: 'v1', description: '初始版本', createdAt: '2024-01-01', createdBy: '管理员' }],
@@ -50,11 +58,28 @@ const mockPrograms = Array.from({ length: 30 }, (_, i) => ({
 }))
 
 const mockMedia = Array.from({ length: 80 }, (_, i) => ({
-  id: i + 1, name: '素材_' + (i + 1) + '.jpg', url: '', thumbnail: '',
+  id: i + 1, name: '素材_' + (i + 1) + (i % 4 === 1 ? '.mp4' : i % 4 === 2 ? '.mp3' : i % 4 === 3 ? '.pdf' : '.jpg'),
+  url: 'https://picsum.photos/seed/cms' + (i + 1) + '/640/360',
+  thumbnail: 'https://picsum.photos/seed/cms' + (i + 1) + '/320/180',
   type: ['image', 'video', 'audio', 'document'][i % 4],
   size: Math.floor(Math.random() * 50000000) + 100000,
+  width: 640, height: 360, duration: i % 4 === 1 ? 120 : 0,
   tags: ['默认'], folderId: (i % 5) + 1, folder: ['图片', '视频', '音频', '文档', '其他'][i % 5],
   uploader: '管理员', usedBy: [], createdAt: '2024-01-01', updatedAt: '2024-01-01',
+}))
+
+const mockDevices = Array.from({ length: 12 }, (_, i) => ({
+  id: i + 1,
+  name: ['大厅主屏', '电梯侧屏', '会议室A', '前台窄屏', '展厅左屏', '展厅右屏'][i % 6] + (i > 5 ? ' #' + (i - 5) : ''),
+  code: 'DEV-' + String(i + 1).padStart(3, '0'),
+  location: ['一楼大厅', '二楼电梯', '三楼会议室', '前台', '展厅'][i % 5],
+  group: ['默认分组', '大厅组', '展厅组'][i % 3],
+  status: ['online', 'online', 'offline', 'syncing', 'online', 'error'][i % 6],
+  resolution: ['1920x1080', '1280x720', '3840x2160'][i % 3],
+  lastSeen: '2026-07-14 12:' + String(10 + i).padStart(2, '0') + ':00',
+  currentProgramId: i % 3 === 0 ? (i % 10) + 1 : null,
+  currentProgramTitle: i % 3 === 0 ? '节目名称 ' + ((i % 10) + 1) : null,
+  createdAt: '2026-01-01',
 }))
 
 const mockCategories = [
@@ -73,11 +98,30 @@ const mockLogs = Array.from({ length: 100 }, (_, i) => ({
   ip: '192.168.1.' + (i % 255), createdAt: '2024-07-01',
 }))
 
+const passwords = { admin: 'admin123', editor1: 'editor123', reviewer1: 'reviewer123', guest1: 'guest123' }
+
+function paginate(list, query) {
+  const total = list.length
+  const hasPaging = query.page !== undefined || query.pageSize !== undefined
+  if (!hasPaging) {
+    return { list, total, page: 1, pageSize: total || 10 }
+  }
+  const page = Math.max(1, parseInt(query.page, 10) || 1)
+  const pageSize = Math.max(1, parseInt(query.pageSize, 10) || 10)
+  const start = (page - 1) * pageSize
+  return {
+    list: list.slice(start, start + pageSize),
+    total,
+    page,
+    pageSize,
+  }
+}
+
 // Auth
 app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body
   const user = mockUsers.find(u => u.username === username)
-  if (user) {
+  if (user && passwords[username] === password) {
     res.json({ code: 0, data: { token: 'mock-jwt-token-' + Date.now(), user }, message: 'ok' })
   } else {
     res.status(401).json({ code: 401, data: null, message: '用户名或密码错误' })
@@ -94,7 +138,7 @@ app.get('/api/articles', (req, res) => {
   if (req.query.keyword) filtered = filtered.filter(a => a.title.includes(req.query.keyword))
   if (req.query.status) filtered = filtered.filter(a => a.status === req.query.status)
   if (req.query.category) filtered = filtered.filter(a => a.category === req.query.category)
-  res.json({ code: 0, data: filtered, message: 'ok' })
+  res.json({ code: 0, data: paginate(filtered, req.query), message: 'ok' })
 })
 app.get('/api/articles/:id', (req, res) => {
   const a = mockArticles.find(x => x.id === parseInt(req.params.id))
@@ -109,10 +153,23 @@ app.post('/api/articles/batch-tags', (req, res) => res.json({ code: 0, data: nul
 app.post('/api/articles/:id/publish', (req, res) => { const i = mockArticles.findIndex(x => x.id === parseInt(req.params.id)); if (i >= 0) mockArticles[i].status = 'published'; res.json({ code: 0, data: mockArticles[i] || { status: 'published' }, message: 'ok' }) })
 
 // Programs
-app.get('/api/programs', (req, res) => res.json({ code: 0, data: mockPrograms, message: 'ok' }))
+app.get('/api/programs', (req, res) => {
+  let filtered = [...mockPrograms]
+  if (req.query.keyword) filtered = filtered.filter(p => p.title.includes(String(req.query.keyword)))
+  if (req.query.status) filtered = filtered.filter(p => p.status === req.query.status)
+  res.json({ code: 0, data: paginate(filtered, req.query), message: 'ok' })
+})
 app.get('/api/programs/:id', (req, res) => { const p = mockPrograms.find(x => x.id === parseInt(req.params.id)); res.json({ code: 0, data: p || mockPrograms[0], message: 'ok' }) })
 app.post('/api/programs', (req, res) => { const n = { id: Date.now(), ...req.body, createdAt: new Date().toISOString().slice(0, 10) }; mockPrograms.push(n); res.json({ code: 0, data: n, message: 'ok' }) })
-app.put('/api/programs/:id', (req, res) => { const i = mockPrograms.findIndex(x => x.id === parseInt(req.params.id)); if (i >= 0) { mockPrograms[i] = { ...mockPrograms[i], ...req.body }; res.json({ code: 0, data: mockPrograms[i], message: 'ok' }) } else { res.json({ code: 0, data: req.body, message: 'ok' }) } })
+app.put('/api/programs/:id', (req, res) => {
+  const i = mockPrograms.findIndex(x => x.id === parseInt(req.params.id))
+  if (i >= 0) {
+    mockPrograms[i] = { ...mockPrograms[i], ...req.body, updatedAt: new Date().toISOString().slice(0, 10) }
+    res.json({ code: 0, data: mockPrograms[i], message: 'ok' })
+  } else {
+    res.json({ code: 0, data: req.body, message: 'ok' })
+  }
+})
 app.delete('/api/programs/:id', (req, res) => { const i = mockPrograms.findIndex(x => x.id === parseInt(req.params.id)); if (i >= 0) mockPrograms.splice(i, 1); res.json({ code: 0, data: null, message: 'ok' }) })
 app.post('/api/programs/:id/chapters', (req, res) => res.json({ code: 0, data: { id: Date.now(), ...req.body }, message: 'ok' }))
 app.put('/api/programs/:pid/chapters/:cid', (req, res) => res.json({ code: 0, data: { ...req.body }, message: 'ok' }))
@@ -122,8 +179,76 @@ app.post('/api/programs/:id/assets', (req, res) => res.json({ code: 0, data: { i
 app.put('/api/programs/:id/cover', (req, res) => res.json({ code: 0, data: null, message: 'ok' }))
 app.post('/api/programs/:id/rollback', (req, res) => res.json({ code: 0, data: { version: req.body.version }, message: 'ok' }))
 
+// Devices
+app.get('/api/devices', (req, res) => {
+  let list = [...mockDevices]
+  if (req.query.keyword) {
+    const kw = String(req.query.keyword)
+    list = list.filter(d => d.name.includes(kw) || d.code.includes(kw) || d.location.includes(kw))
+  }
+  if (req.query.status) list = list.filter(d => d.status === req.query.status)
+  res.json({ code: 0, data: paginate(list, req.query), message: 'ok' })
+})
+app.post('/api/devices', (req, res) => {
+  const n = {
+    id: Date.now(),
+    status: 'online',
+    lastSeen: new Date().toISOString().slice(0, 19).replace('T', ' '),
+    currentProgramId: null,
+    currentProgramTitle: null,
+    createdAt: new Date().toISOString().slice(0, 10),
+    resolution: '1920x1080',
+    group: '默认分组',
+    location: '',
+    ...req.body,
+  }
+  mockDevices.unshift(n)
+  res.json({ code: 0, data: n, message: 'ok' })
+})
+app.put('/api/devices/:id', (req, res) => {
+  const i = mockDevices.findIndex(x => x.id === parseInt(req.params.id))
+  if (i >= 0) {
+    mockDevices[i] = { ...mockDevices[i], ...req.body }
+    res.json({ code: 0, data: mockDevices[i], message: 'ok' })
+  } else {
+    res.json({ code: 404, data: null, message: '设备不存在' })
+  }
+})
+app.delete('/api/devices/:id', (req, res) => {
+  const i = mockDevices.findIndex(x => x.id === parseInt(req.params.id))
+  if (i >= 0) mockDevices.splice(i, 1)
+  res.json({ code: 0, data: null, message: 'ok' })
+})
+app.post('/api/devices/deploy', (req, res) => {
+  const { programId, deviceIds } = req.body || {}
+  const program = mockPrograms.find(p => p.id === Number(programId))
+  let success = 0
+  let failed = 0
+  ;(deviceIds || []).forEach((id) => {
+    const i = mockDevices.findIndex(d => d.id === Number(id))
+    if (i >= 0 && mockDevices[i].status !== 'offline') {
+      mockDevices[i].status = 'syncing'
+      mockDevices[i].currentProgramId = Number(programId)
+      mockDevices[i].currentProgramTitle = program?.title || ('节目 #' + programId)
+      success += 1
+      setTimeout(() => {
+        if (mockDevices[i]) mockDevices[i].status = 'online'
+      }, 1500)
+    } else {
+      failed += 1
+    }
+  })
+  res.json({ code: 0, data: { success, failed }, message: 'ok' })
+})
+
 // Media
-app.get('/api/media', (req, res) => res.json({ code: 0, data: mockMedia, message: 'ok' }))
+app.get('/api/media', (req, res) => {
+  let list = [...mockMedia]
+  if (req.query.keyword) list = list.filter(m => m.name.includes(String(req.query.keyword)))
+  if (req.query.type) list = list.filter(m => m.type === req.query.type)
+  if (req.query.folderId) list = list.filter(m => String(m.folderId) === String(req.query.folderId))
+  res.json({ code: 0, data: paginate(list, req.query), message: 'ok' })
+})
 app.get('/api/media/folders', (req, res) => res.json({ code: 0, data: [], message: 'ok' }))
 app.post('/api/media/upload', (req, res) => res.json({ code: 0, data: { id: Date.now(), name: 'uploaded_file' }, message: 'ok' }))
 app.delete('/api/media/:id', (req, res) => res.json({ code: 0, data: null, message: 'ok' }))
@@ -141,7 +266,39 @@ app.post('/api/tags', (req, res) => res.json({ code: 0, data: { id: Date.now(), 
 app.delete('/api/tags/:id', (req, res) => res.json({ code: 0, data: null, message: 'ok' }))
 
 // Logs
-app.get('/api/logs', (req, res) => res.json({ code: 0, data: mockLogs, message: 'ok' }))
+app.get('/api/logs', (req, res) => {
+  let list = [...mockLogs]
+  if (req.query.keyword) list = list.filter(l => l.userName.includes(String(req.query.keyword)))
+  if (req.query.action) list = list.filter(l => l.action === req.query.action)
+  res.json({ code: 0, data: paginate(list, req.query), message: 'ok' })
+})
+
+// Users
+app.get('/api/users', (req, res) => {
+  let list = [...mockUsers]
+  if (req.query.keyword) {
+    const kw = String(req.query.keyword)
+    list = list.filter(u => u.username.includes(kw) || u.nickname.includes(kw) || u.email.includes(kw))
+  }
+  res.json({ code: 0, data: paginate(list, req.query), message: 'ok' })
+})
+app.post('/api/users', (req, res) => {
+  const n = { id: Date.now(), avatar: '', createdAt: new Date().toISOString().slice(0, 10), updatedAt: new Date().toISOString().slice(0, 10), ...req.body }
+  mockUsers.push(n)
+  res.json({ code: 0, data: n, message: 'ok' })
+})
+app.put('/api/users/:id', (req, res) => {
+  const i = mockUsers.findIndex(x => x.id === parseInt(req.params.id))
+  if (i >= 0) {
+    mockUsers[i] = { ...mockUsers[i], ...req.body, updatedAt: new Date().toISOString().slice(0, 10) }
+    res.json({ code: 0, data: mockUsers[i], message: 'ok' })
+  } else res.json({ code: 404, data: null, message: '用户不存在' })
+})
+app.delete('/api/users/:id', (req, res) => {
+  const i = mockUsers.findIndex(x => x.id === parseInt(req.params.id))
+  if (i >= 0) mockUsers.splice(i, 1)
+  res.json({ code: 0, data: null, message: 'ok' })
+})
 
 // Settings
 app.get('/api/settings', (req, res) => res.json({ code: 0, data: {}, message: 'ok' }))

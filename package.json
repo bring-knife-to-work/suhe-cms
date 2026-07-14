@@ -1,11 +1,12 @@
 {
-  "name": "cms-admin",
+  "name": "suhe-cms",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently node mock/server.cjs vite",
+    "dev": "concurrently \"node mock/server.cjs\" \"vite\"",
     "build": "vue-tsc -b && vite build",
+    "build:pages": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",

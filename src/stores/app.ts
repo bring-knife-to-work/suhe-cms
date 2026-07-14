@@ -23,11 +23,15 @@ export const useAppStore = defineStore('app', () => {
     localStorage.setItem('user', JSON.stringify(u))
   }
 
-  function toggleTheme() {
-    darkMode.value = !darkMode.value
-    localStorage.setItem('theme', darkMode.value ? 'dark' : 'light')
-    document.documentElement.classList.toggle('dark', darkMode.value)
-  }
+function toggleTheme() {
+  darkMode.value = !darkMode.value
+  localStorage.setItem('theme', darkMode.value ? 'dark' : 'light')
+  document.documentElement.classList.toggle('dark', darkMode.value)
+}
+
+function initTheme() {
+  document.documentElement.classList.toggle('dark', darkMode.value)
+}
 
   function toggleSidebar() {
     sidebarCollapsed.value = !sidebarCollapsed.value
@@ -45,9 +49,7 @@ export const useAppStore = defineStore('app', () => {
   if (savedUser) {
     try { user.value = JSON.parse(savedUser) } catch { /* ignore */ }
   }
-  if (darkMode.value) {
-    document.documentElement.classList.add('dark')
-  }
+  initTheme()
 
   return { user, token, darkMode, sidebarCollapsed, isLoggedIn, isAdmin, isEditor, setToken, setUser, toggleTheme, toggleSidebar, logout }
 })

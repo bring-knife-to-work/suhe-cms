@@ -2,7 +2,7 @@
 import { ElMessage } from 'element-plus'
 import type { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig, AxiosResponse } from 'axios'
 
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   code: number
   data: T
   message: string
@@ -22,7 +22,7 @@ class Request {
       (config: InternalAxiosRequestConfig) => {
         const token = localStorage.getItem('token')
         if (token) {
-          config.headers.Authorization = Bearer 
+          config.headers.Authorization = `Bearer ${token}`
         }
         return config
       },
@@ -54,20 +54,24 @@ class Request {
     )
   }
 
-  get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.instance.get<ApiResponse<T>>(url, config)
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.instance.get<ApiResponse<T>>(url, config)
+    return response.data
   }
 
-  post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.instance.post<ApiResponse<T>>(url, data, config)
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.instance.post<ApiResponse<T>>(url, data, config)
+    return response.data
   }
 
-  put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.instance.put<ApiResponse<T>>(url, data, config)
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.instance.put<ApiResponse<T>>(url, data, config)
+    return response.data
   }
 
-  delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    return this.instance.delete<ApiResponse<T>>(url, config)
+  async delete<T>(url: string, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+    const response = await this.instance.delete<ApiResponse<T>>(url, config)
+    return response.data
   }
 }
 

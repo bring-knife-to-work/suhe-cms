@@ -73,7 +73,7 @@ import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 
 const config = reactive({
-  siteName: 'Vue CMS Admin',
+  siteName: 'suhe CMS',
   logo: '',
   language: 'zh-CN',
   maxUploadSize: 100,
@@ -97,7 +97,7 @@ function handleSave() {
 
 function handleReset() {
   Object.assign(config, {
-    siteName: 'Vue CMS Admin', logo: '', language: 'zh-CN',
+    siteName: 'suhe CMS', logo: '', language: 'zh-CN',
     maxUploadSize: 100, allowedFormats: ['jpg', 'jpeg', 'png'],
     defaultCategoryId: 1, autoSaveInterval: 60, enableComments: true,
     maxLoginAttempts: 5, sessionTimeout: 120,

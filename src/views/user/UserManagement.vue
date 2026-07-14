@@ -2,9 +2,13 @@
   <div class="page-card">
     <div class="section-header">
       <h3>用户列表</h3>
-      <el-button type="primary" @click="showAddUser"><el-icon><Plus /></el-icon> 新增用户</el-button>
+      <div class="header-actions">
+        <el-input v-model="keyword" placeholder="搜索用户名/昵称/邮箱" clearable style="width: 220px" @clear="onSearch" @keyup.enter="onSearch" />
+        <el-button type="primary" @click="onSearch">搜索</el-button>
+        <el-button type="primary" @click="showAddUser"><el-icon><Plus /></el-icon> 新增用户</el-button>
+      </div>
     </div>
-    <el-table :data="users" stripe style="width: 100%">
+    <el-table :data="tableData" v-loading="loading" stripe style="width: 100%">
       <el-table-column prop="username" label="用户名" width="140" />
       <el-table-column prop="nickname" label="昵称" width="120" />
       <el-table-column prop="email" label="邮箱" min-width="180" />
@@ -22,6 +26,14 @@
       </el-table-column>
     </el-table>
 
+    <PaginationBar
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :total="total"
+      :page-sizes="[10, 20, 50]"
+      @change="fetchData"
+    />
+
     <el-dialog v-model="userDialogVisible" :title="userForm.id ? '编辑用户' : '新增用户'" width="500px">
       <el-form :model="userForm" label-width="80px">
         <el-form-item label="用户名">
@@ -35,7 +47,10 @@
         </el-form-item>
         <el-form-item label="角色">
           <el-select v-model="userForm.role" style="width: 100%">
-            <el-option label="管理员" value="admin" /><el-option label="编辑" value="editor" /><el-option label="审核员" value="reviewer" /><el-option label="访客" value="guest" />
+            <el-option label="管理员" value="admin" />
+            <el-option label="编辑" value="editor" />
+            <el-option label="审核员" value="reviewer" />
+            <el-option label="访客" value="guest" />
           </el-select>
         </el-form-item>
         <el-form-item label="密码" v-if="!userForm.id">
@@ -51,20 +66,29 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import type { User } from '@/types'
+import { http } from '@/utils/request'
+import { unwrapPageResult } from '@/utils/page'
+import PaginationBar from '@/components/common/PaginationBar.vue'
+import type { User, PageResult } from '@/types'
 
-const users = ref<User[]>([
-  { id: 1, username: 'admin', nickname: '管理员', email: 'admin@cms.com', role: 'admin' as any, avatar: '', createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-  { id: 2, username: 'editor1', nickname: '张三', email: 'editor@cms.com', role: 'editor' as any, avatar: '', createdAt: '2024-02-15', updatedAt: '2024-03-01' },
-  { id: 3, username: 'reviewer1', nickname: '李四', email: 'reviewer@cms.com', role: 'reviewer' as any, avatar: '', createdAt: '2024-03-01', updatedAt: '2024-03-15' },
-  { id: 4, username: 'guest1', nickname: '王五', email: 'guest@cms.com', role: 'guest' as any, avatar: '', createdAt: '2024-04-01', updatedAt: '2024-04-01' },
-])
-
+const keyword = ref('')
+const loading = ref(false)
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const tableData = ref<User[]>([])
 const userDialogVisible = ref(false)
-const userForm = reactive({ id: null as number | null, username: '', nickname: '', email: '', role: 'editor' as string, password: '' })
+const userForm = reactive({
+  id: null as number | null,
+  username: '',
+  nickname: '',
+  email: '',
+  role: 'editor' as string,
+  password: '',
+})
 
 function roleType(role: string) {
   const map: Record<string, string> = { admin: 'danger', editor: 'primary', reviewer: 'warning', guest: 'info' }
@@ -75,31 +99,78 @@ function roleText(role: string) {
   return map[role] || role
 }
 
-function showAddUser() { Object.assign(userForm, { id: null, username: '', nickname: '', email: '', role: 'editor', password: '' }); userDialogVisible.value = true }
-function showEditUser(row: User) { Object.assign(userForm, { id: row.id, username: row.username, nickname: row.nickname, email: row.email, role: row.role, password: '' }); userDialogVisible.value = true }
+async function fetchData() {
+  loading.value = true
+  try {
+    const res = await http.get<User[] | PageResult<User>>('/users', {
+      params: {
+        page: currentPage.value,
+        pageSize: pageSize.value,
+        keyword: keyword.value || undefined,
+      },
+    })
+    const page = unwrapPageResult(res.data)
+    tableData.value = page.list
+    total.value = page.total
+  } finally {
+    loading.value = false
+  }
+}
+
+function onSearch() {
+  currentPage.value = 1
+  fetchData()
+}
+
+function showAddUser() {
+  Object.assign(userForm, { id: null, username: '', nickname: '', email: '', role: 'editor', password: '' })
+  userDialogVisible.value = true
+}
+
+function showEditUser(row: User) {
+  Object.assign(userForm, {
+    id: row.id,
+    username: row.username,
+    nickname: row.nickname,
+    email: row.email,
+    role: row.role,
+    password: '',
+  })
+  userDialogVisible.value = true
+}
 
 async function saveUser() {
-  if (!userForm.username || !userForm.nickname) { ElMessage.warning('请填写必要信息'); return }
+  if (!userForm.username || !userForm.nickname) {
+    ElMessage.warning('请填写必要信息')
+    return
+  }
   if (userForm.id) {
-    const idx = users.value.findIndex(u => u.id === userForm.id)
-    if (idx !== -1) Object.assign(users.value[idx], userForm)
+    await http.put('/users/' + userForm.id, {
+      nickname: userForm.nickname,
+      email: userForm.email,
+      role: userForm.role,
+    })
     ElMessage.success('用户更新成功')
   } else {
-    users.value.push({ id: Date.now(), ...userForm, avatar: '', createdAt: new Date().toISOString().slice(0, 10), updatedAt: new Date().toISOString().slice(0, 10) })
+    await http.post('/users', { ...userForm })
     ElMessage.success('用户创建成功')
   }
   userDialogVisible.value = false
+  fetchData()
 }
 
 async function handleDelete(row: User) {
   await ElMessageBox.confirm(`确定删除用户「${row.nickname}」吗？`, '警告', { type: 'warning' })
-  users.value = users.value.filter(u => u.id !== row.id)
+  await http.delete('/users/' + row.id)
   ElMessage.success('删除成功')
+  fetchData()
 }
+
+onMounted(fetchData)
 </script>
 
 <style scoped>
-.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
 .section-header h3 { margin: 0; font-size: 16px; }
+.header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 </style>
-

@@ -11,10 +11,10 @@ export const useAuthStore = defineStore('auth', () => {
     loading.value = true
     try {
       const res = await http.post<{ token: string; user: User }>('/auth/login', params)
-      localStorage.setItem('token', res.data.token)
+      const { token, user } = res.data
       const appStore = useAppStore()
-      appStore.setToken(res.data.token)
-      appStore.setUser(res.data.user)
+      appStore.setToken(token)
+      appStore.setUser(user)
       return res.data
     } finally {
       loading.value = false

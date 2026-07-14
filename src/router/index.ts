@@ -20,6 +20,7 @@ const routes: RouteRecordRaw[] = [
       { path: 'programs', name: 'Programs', component: () => import('@/views/program/ProgramList.vue'), meta: { title: '节目管理', icon: 'VideoCamera', permission: [Role.ADMIN, Role.EDITOR] } },
       { path: 'programs/create', name: 'ProgramCreate', component: () => import('@/views/program/ProgramEditor.vue'), meta: { title: '新建节目', icon: 'EditPen', permission: [Role.ADMIN, Role.EDITOR] } },
       { path: 'programs/:id/edit', name: 'ProgramEdit', component: () => import('@/views/program/ProgramEditor.vue'), meta: { title: '编辑节目', icon: 'EditPen', permission: [Role.ADMIN, Role.EDITOR] } },
+      { path: 'devices', name: 'Devices', component: () => import('@/views/device/DeviceList.vue'), meta: { title: '设备管理', icon: 'Monitor', permission: [Role.ADMIN, Role.EDITOR] } },
       { path: 'media', name: 'Media', component: () => import('@/views/media/MediaView.vue'), meta: { title: '素材管理', icon: 'Picture', permission: [Role.ADMIN, Role.EDITOR, Role.REVIEWER] } },
       { path: 'categories', name: 'Categories', component: () => import('@/views/category/CategoryView.vue'), meta: { title: '分类标签', icon: 'Menu', permission: [Role.ADMIN, Role.EDITOR] } },
       { path: 'users', name: 'Users', component: () => import('@/views/user/UserManagement.vue'), meta: { title: '用户管理', icon: 'User', permission: [Role.ADMIN] } },
@@ -30,7 +31,10 @@ const routes: RouteRecordRaw[] = [
   { path: '/:pathMatch(.*)*', redirect: '/' },
 ]
 
-const router = createRouter({ history: createWebHistory(), routes })
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+})
 
 const whiteList = ['/login']
 
@@ -38,7 +42,7 @@ router.beforeEach((to, _from, next) => {
   const token = localStorage.getItem('token')
   const title = to.meta.title as string
   if (title) {
-    const appName = import.meta.env.VITE_APP_TITLE || 'CMS Admin'
+    const appName = import.meta.env.VITE_APP_TITLE || 'suhe CMS'
     document.title = title + ' - ' + appName
   }
   if (!token) {

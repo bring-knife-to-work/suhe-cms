@@ -39,6 +39,35 @@ export interface Article {
   updatedAt: string
 }
 
+export type CanvasShapeType = 'rect' | 'circle' | 'ellipse' | 'triangle' | 'text'
+
+export interface CanvasShape {
+  id: string
+  type: CanvasShapeType
+  x: number
+  y: number
+  width: number
+  height: number
+  fill: string
+  stroke: string
+  mediaId?: number
+  mediaUrl?: string
+  mediaName?: string
+  label?: string
+  fontSize?: number
+  fontColor?: string
+  locked?: boolean
+}
+
+export interface ProgramCanvasLayout {
+  width: number
+  height: number
+  /** 如 1920x1080，与 width/height 同步 */
+  resolution: string
+  background: string
+  shapes: CanvasShape[]
+}
+
 export interface Program {
   id: number
   title: string
@@ -53,6 +82,9 @@ export interface Program {
   publishTime: string | null
   chapters: ProgramChapter[]
   assets: ProgramAsset[]
+  canvas?: ProgramCanvasLayout
+  /** 节目输出分辨率，如 1920x1080 */
+  resolution?: string
   version: number
   history: ProgramHistory[]
   createdAt: string
@@ -163,4 +195,40 @@ export interface SystemConfig {
   defaultCategoryId: number
   maxUploadSize: number
   allowedFormats: string[]
+}
+
+export type DeviceStatus = 'online' | 'offline' | 'syncing' | 'error'
+
+export interface Device {
+  id: number
+  name: string
+  code: string
+  location: string
+  group: string
+  status: DeviceStatus
+  resolution: string
+  lastSeen: string
+  currentProgramId: number | null
+  currentProgramTitle: string | null
+  createdAt: string
+}
+
+export interface DeviceDeployPayload {
+  programId: number
+  deviceIds: number[]
+  scheduleAt?: string | null
+}
+
+export interface PageQuery {
+  page?: number
+  pageSize?: number
+  keyword?: string
+  [key: string]: unknown
+}
+
+export interface PageResult<T> {
+  list: T[]
+  total: number
+  page: number
+  pageSize: number
 }

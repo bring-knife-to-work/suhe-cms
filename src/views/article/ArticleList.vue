@@ -2,23 +2,23 @@
   <div class="page-card">
     <div class="page-toolbar">
       <div class="toolbar-left">
-        <el-input v-model="searchQuery" placeholder="搜索标题/作者" clearable style="width: 220px" @clear="fetchData">
+        <el-input v-model="searchQuery" placeholder="搜索标题/作者" clearable style="width: 220px" @clear="onSearch">
           <template #prefix><el-icon><Search /></el-icon></template>
         </el-input>
-        <el-select v-model="filterStatus" placeholder="状态" clearable style="width: 130px" @change="fetchData">
+        <el-select v-model="filterStatus" placeholder="状态" clearable style="width: 130px" @change="onSearch">
           <el-option label="草稿" value="draft" />
           <el-option label="待审核" value="pending" />
           <el-option label="已发布" value="published" />
           <el-option label="已驳回" value="rejected" />
         </el-select>
-        <el-select v-model="filterCategory" placeholder="分类" clearable style="width: 130px" @change="fetchData">
+        <el-select v-model="filterCategory" placeholder="分类" clearable style="width: 130px" @change="onSearch">
           <el-option label="科技" value="科技" />
           <el-option label="文化" value="文化" />
           <el-option label="生活" value="生活" />
           <el-option label="娱乐" value="娱乐" />
           <el-option label="体育" value="体育" />
         </el-select>
-        <el-button type="primary" @click="fetchData"><el-icon><Search /></el-icon> 搜索</el-button>
+        <el-button type="primary" @click="onSearch"><el-icon><Search /></el-icon> 搜索</el-button>
         <el-button @click="resetFilter"><el-icon><Refresh /></el-icon> 重置</el-button>
       </div>
       <div>
@@ -59,17 +59,13 @@
       </el-table>
     </div>
 
-    <div class="pagination-wrapper">
-      <el-pagination
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="total"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="fetchData"
-        @current-change="fetchData"
-      />
-    </div>
+    <PaginationBar
+      v-model:current-page="currentPage"
+      v-model:page-size="pageSize"
+      :total="total"
+      :page-sizes="[10, 20, 50, 100]"
+      @change="fetchData"
+    />
   </div>
 </template>
 
@@ -78,8 +74,8 @@ import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search, Refresh, Delete, Plus } from '@element-plus/icons-vue'
 import { useArticleStore } from '@/stores/article'
+import PaginationBar from '@/components/common/PaginationBar.vue'
 import type { Article } from '@/types'
-import { ArticleStatus } from '@/constants/enums'
 
 const articleStore = useArticleStore()
 const searchQuery = ref('')
@@ -111,17 +107,29 @@ async function fetchData() {
     if (filterCategory.value) params.category = filterCategory.value
     await articleStore.fetchList(params)
     tableData.value = articleStore.articles
-    total.value = articleStore.articles.length
+    total.value = articleStore.total
+    const maxPage = Math.max(1, Math.ceil(total.value / pageSize.value) || 1)
+    if (currentPage.value > maxPage) {
+      currentPage.value = maxPage
+      await articleStore.fetchList({ ...params, page: currentPage.value })
+      tableData.value = articleStore.articles
+      total.value = articleStore.total
+    }
   } finally {
     loading.value = false
   }
+}
+
+function onSearch() {
+  currentPage.value = 1
+  fetchData()
 }
 
 function resetFilter() {
   searchQuery.value = ''
   filterStatus.value = ''
   filterCategory.value = ''
-  fetchData()
+  onSearch()
 }
 
 function handleSelectionChange(rows: Article[]) {
@@ -152,12 +160,3 @@ async function handleBatchDelete() {
 
 onMounted(fetchData)
 </script>
-
-<style scoped>
-.pagination-wrapper {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-</style>
-

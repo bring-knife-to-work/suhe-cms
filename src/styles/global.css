@@ -1,41 +1,55 @@
-﻿/* Global SCSS styles for CMS Admin*/
+﻿/* suhe CMS theme tokens */
 
-/* CSS Variables*/
 :root {
-  --primary-color: #409eff;
-  --success-color: #67c23a;
-  --warning-color: #e6a23c;
-  --danger-color: #f56c6c;
-  --info-color: #909399;
-  --text-primary: #303133;
-  --text-regular: #606266;
-  --text-secondary: #909399;
-  --border-color: #dcdfe6;
-  --bg-color: #f5f7fa;
-  --bg-color-grey: #f5f7fa;
+  --primary-color: #0f766e;
+  --primary-soft: #14b8a6;
+  --success-color: #16a34a;
+  --warning-color: #d97706;
+  --danger-color: #dc2626;
+  --info-color: #64748b;
+  --text-primary: #0f172a;
+  --text-regular: #334155;
+  --text-secondary: #64748b;
+  --border-color: #dbe3ee;
+  --bg-color: #eef3f7;
+  --bg-color-grey: #e8eef4;
+  --surface-elevated: #ffffff;
+  --surface-muted: #f5f8fb;
+  --sidebar-bg: #10243a;
+  --sidebar-bg-deep: #0b1a2a;
+  --el-color-primary: #0f766e;
 }
 
-/* Dark mode variables*/
 html.dark {
-  --primary-color: #409eff;
-  --text-primary: #e5eaf5;
-  --text-regular: #c0c4cc;
-  --text-secondary: #909399;
-  --border-color: #434548;
-  --bg-color: #141414;
-  --bg-color-grey: #1d1e1f;
+  --primary-color: #2dd4bf;
+  --primary-soft: #14b8a6;
+  --success-color: #4ade80;
+  --warning-color: #fbbf24;
+  --danger-color: #f87171;
+  --info-color: #94a3b8;
+  --text-primary: #e8eef7;
+  --text-regular: #cbd5e1;
+  --text-secondary: #94a3b8;
+  --border-color: #2a3648;
+  --bg-color: #0b1220;
+  --bg-color-grey: #111827;
+  --surface-elevated: #152033;
+  --surface-muted: #1a2638;
+  --sidebar-bg: #070d16;
+  --sidebar-bg-deep: #050a11;
+  --el-color-primary: #2dd4bf;
 }
 
-/* Reset*/
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: "Source Sans 3", "IBM Plex Sans", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   font-size: 14px;
   color: var(--text-primary);
   background-color: var(--bg-color);
@@ -47,14 +61,13 @@ html, body {
   height: 100%;
 }
 
-/* Scrollbar*/
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: rgba(15, 23, 42, 0.2);
   border-radius: 3px;
 }
 
@@ -66,7 +79,6 @@ html.dark ::-webkit-scrollbar-thumb {
   background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Transitions*/
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -77,20 +89,18 @@ html.dark ::-webkit-scrollbar-thumb {
   opacity: 0;
 }
 
-/* Page card shared style*/
 .page-card {
-  background: #fff;
-  border-radius: 8px;
+  background: var(--surface-elevated);
+  border-radius: 14px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
 }
 
 html.dark .page-card {
-  background: #1d1e1f;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
 }
 
-/* Toolbar*/
 .page-toolbar {
   display: flex;
   justify-content: space-between;
@@ -107,15 +117,18 @@ html.dark .page-card {
   flex-wrap: wrap;
 }
 
-/* Table wrapper*/
 .table-wrapper {
   overflow-x: auto;
 }
 
-/* Empty state*/
 .empty-state {
   text-align: center;
   padding: 60px 20px;
   color: var(--text-secondary);
 }
 
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
