@@ -8,6 +8,37 @@
 
 > Pages 前端演示默认使用 Mock；本地完整联调请同时启动 Mock 服务。
 
+## 界面预览
+
+以下为 suhe CMS 实际运行界面截图。克隆仓库后执行 `npm install && npm run dev` 即可本地体验完整功能（演示账号：`admin` / `admin123`）。
+
+| 登录页 | 仪表盘 |
+|:---:|:---:|
+| ![登录页](docs/screenshots/login.png) | ![仪表盘](docs/screenshots/dashboard.png) |
+
+| 信息管理 | 节目管理 |
+|:---:|:---:|
+| ![信息管理](docs/screenshots/articles.png) | ![节目管理](docs/screenshots/programs.png) |
+
+| 画布编排 | 设备管理 |
+|:---:|:---:|
+| ![画布编排](docs/screenshots/program-editor.png) | ![设备管理](docs/screenshots/devices.png) |
+
+| 素材管理 | 分类标签 |
+|:---:|:---:|
+| ![素材管理](docs/screenshots/media.png) | ![分类标签](docs/screenshots/categories.png) |
+
+### 立即下载体验
+
+```bash
+git clone git@github.com:bring-knife-to-work/suhe-cms.git
+cd suhe-cms
+npm install
+npm run dev
+```
+
+浏览器访问 `http://localhost:9999`，使用演示账号登录即可进入控制台。
+
 ## 功能概览
 
 - **登录认证**：JWT Token、记住登录态、路由守卫
@@ -116,6 +147,8 @@ suhe-cms/
 │       ├── category/
 │       ├── user/
 │       └── settings/
+├── docs/
+│   └── screenshots/      # README 界面截图
 ├── .github/workflows/    # GitHub Pages 部署
 └── package.json
 ```
