@@ -64,6 +64,7 @@ npm run dev
 ```bash
 npm run dev          # Mock + 前端开发
 npm run build        # 类型检查 + 生产构建
+npm run build:pages  # GitHub Pages 构建（/suhe-cms/ 子路径）
 npm run preview      # 预览构建产物
 npm run typecheck    # 仅类型检查
 npm run lint         # ESLint
@@ -124,10 +125,24 @@ suhe-cms/
 本仓库通过 GitHub Actions 在推送到 `main` 后自动构建并部署到 Pages。
 
 - 工作流：`.github/workflows/deploy-pages.yml`
+- 在线地址：<https://bring-knife-to-work.github.io/suhe-cms/>
 - 站点路径：`/suhe-cms/`
 - SPA 回退：构建后复制 `index.html` 为 `404.html`
 
-如需手动触发，可在仓库 **Actions → Deploy GitHub Pages → Run workflow**。
+### 首次发布（仅需一次）
+
+1. 打开仓库 [Settings → Pages](https://github.com/bring-knife-to-work/suhe-cms/settings/pages)
+2. **Build and deployment → Source** 选择 **GitHub Actions**
+3. 进入 [Actions → Deploy GitHub Pages](https://github.com/bring-knife-to-work/suhe-cms/actions/workflows/deploy-pages.yml)，点击 **Run workflow** 重新部署
+
+或使用 GitHub CLI（需已登录）：
+
+```bash
+gh api repos/bring-knife-to-work/suhe-cms/pages -X POST -f build_type=workflow
+gh workflow run deploy-pages.yml --repo bring-knife-to-work/suhe-cms
+```
+
+> Pages 为纯静态前端，无 Mock API；登录与数据联调请使用本地 `npm run dev`。
 
 ## License
 
